@@ -33,10 +33,10 @@ export default createSchema((p) => ({
   Account: p.createTable({
     id: p.hex(),
     positions: p.many("Position.accountId"),
-    swapPoints: p.bigint().optional(),
-    wrPoints: p.bigint().optional(),
-    slPoints: p.bigint().optional(),
-    pointsTotal: p.bigint().optional(),
+    swapPoints: p.bigint(),
+    wrPoints: p.bigint(),
+    slPoints: p.bigint(),
+    pointsTotal: p.bigint(),
   }),
   Period: p.createTable({
     id: p.bigint(),
