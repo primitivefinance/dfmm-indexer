@@ -1,11 +1,11 @@
 import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
-  SLPool: p.createTable({
+  Pool: p.createTable({
     id: p.bigint(),
     tokenIndexId: p.hex().references("TokenIndex.id"),
     tokenIndex: p.one("tokenIndexId"),
-    strategyId: p.hex().references("SLStrategy.id"),
+    strategyId: p.hex().references("Strategy.id"),
     strategy: p.one("strategyId"),
     accountId: p.hex().references("Account.id"),
     account: p.one("accountId"),
@@ -18,32 +18,7 @@ export default createSchema((p) => ({
     liquidity: p.float(),
     lpToken: p.hex(),
     name: p.string(),
-    parametersId: p.bigint().references("SLParameters.id"),
-    parameters: p.one("parametersId"),
-    positions: p.many("SLPosition.poolId"),
-  }),
-  WRPool: p.createTable({
-    id: p.bigint(),
-    tokenXId: p.hex().references("Token.id"),
-    tokenX: p.one("tokenXId"),
-    tokenYId: p.hex().references("Token.id"),
-    tokenY: p.one("tokenYId"),
-    strategyId: p.hex().references("WRStrategy.id"),
-    strategy: p.one("strategyId"),
-    accountId: p.hex().references("Account.id"),
-    account: p.one("accountId"),
-    timestamp: p.bigint(),
-    reservesXWad: p.bigint(),
-    reservesX: p.float(),
-    reservesYWad: p.bigint(),
-    reservesY: p.float(),
-    liquidityWad: p.bigint(),
-    liquidity: p.float(),
-    lpToken: p.hex(),
-    name: p.string(),
-    parametersId: p.bigint().references("WRParameters.id"),
-    parameters: p.one("parametersId"),
-    positions: p.many("WRPosition.poolId"),
+    positions: p.many("Position.poolId"),
   }),
   Token: p.createTable({
     id: p.hex(),
@@ -53,18 +28,15 @@ export default createSchema((p) => ({
   }),
   TokenIndex: p.createTable({
     id: p.hex(),
-    names: p.string().list(),
-    symbol: p.string().list(),
-    decimals: p.int().list(),
+    tokens: p.hex().list(),
   }),
   Account: p.createTable({
     id: p.hex(),
-    slPositions: p.many("SLPosition.accountId"),
-    wrPositions: p.many("WRPosition.accountId"),
-    swapPoints: p.bigint(),
-    wrPoints: p.bigint(),
-    slPoints: p.bigint(),
-    pointsTotal: p.bigint(),
+    positions: p.many("Position.accountId"),
+    swapPoints: p.bigint().optional(),
+    wrPoints: p.bigint().optional(),
+    slPoints: p.bigint().optional(),
+    pointsTotal: p.bigint().optional(),
   }),
   Period: p.createTable({
     id: p.bigint(),
@@ -72,25 +44,16 @@ export default createSchema((p) => ({
     end: p.int(),
     current: p.boolean(),
   }),
-  SLPosition: p.createTable({
+  Position: p.createTable({
     id: p.hex(),
     liquidity: p.float(),
     liquidityWad: p.bigint(),
     accountId: p.hex().references("Account.id"),
     account: p.one("accountId"),
-    poolId: p.bigint().references("SLPool.id"),
+    poolId: p.bigint().references("Pool.id"),
     pool: p.one("poolId"),
   }),
-  WRPosition: p.createTable({
-    id: p.hex(),
-    liquidity: p.float(),
-    liquidityWad: p.bigint(),
-    accountId: p.hex().references("Account.id"),
-    account: p.one("accountId"),
-    poolId: p.bigint().references("WRPool.id"),
-    pool: p.one("poolId"),
-  }),
-  SLParameters: p.createTable({
+  G3MNParameters: p.createTable({
     id: p.bigint(),
     swapFee: p.float(),
     swapFeeWad: p.bigint(),
@@ -100,21 +63,16 @@ export default createSchema((p) => ({
     weightsWad: p.bigint().list(),
     controller: p.hex(),
   }),
-  WRParameters: p.createTable({
+  CSParameters: p.createTable({
     id: p.bigint(),
     price: p.bigint(),
     swapFee: p.float(),
     swapFeeWad: p.bigint(),
     controller: p.hex(),
   }),
-  SLStrategy: p.createTable({
+  Strategy: p.createTable({
     id: p.hex(),
     name: p.string(),
-    pools: p.many("SLPool.strategyId"),
-  }),
-  WRStrategy: p.createTable({
-    id: p.hex(),
-    name: p.string(),
-    pools: p.many("WRPool.strategyId"),
+    pools: p.many("Pool.strategyId"),
   }),
 }));

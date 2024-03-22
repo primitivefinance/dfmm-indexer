@@ -1,5 +1,5 @@
 export type contractAddress = {
-  [key: number]: string
+  [key: number]: `0x${string}`
 }
 
 export const WR_token_address: contractAddress = {
