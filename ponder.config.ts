@@ -2,6 +2,8 @@ import { createConfig } from "@ponder/core"
 import { http } from "viem"
 
 import { DFMMAbi } from "./abis/DFMMAbi"
+import { G3MNAbi } from "./abis/G3MN"
+import { SL_strategy_address } from "./src/constants"
 
 export default createConfig({
   networks: {
@@ -20,5 +22,14 @@ export default createConfig({
         },
       },
     },
+    G3MN: {
+      abi: G3MNAbi,
+      network: {
+        optimismSepolia: {
+          address: SL_strategy_address[111555420],
+          startBlock: 9665692
+        }
+      }
+    }
   },
 })
