@@ -35,3 +35,11 @@ export const lnInitParams = [
   },
 ];
 
+export const geometricMeanInitParams = [
+  { type: "uint256" },
+  { type: "uint256" },
+  { type: "uint256" },
+  { type: "uint256" },
+  { type: "uint256" },
+  { type: "address" },
+];

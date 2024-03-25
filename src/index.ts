@@ -11,7 +11,12 @@ import { ethWeiToPoints } from "./utils";
 import { G3MNAbi } from "../abis/G3MN";
 import { ERC20Abi } from "../abis/ERC20Abi";
 import { DFMMAbi } from "../abis/DFMMAbi";
-import { csInitParams, lnInitParams, nTokenG3mInitParams } from "./types";
+import {
+  csInitParams,
+  geometricMeanInitParams,
+  lnInitParams,
+  nTokenG3mInitParams,
+} from "./types";
 
 ponder.on("DFMM:Swap", async ({ event, context }) => {
   const { Account } = context.db;
@@ -70,6 +75,7 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     ConstantSumParams,
     NTokenGeometricMeanParams,
     LogNormalParams,
+    GeometricMeanParams,
   } = context.db;
 
   const poolId = event.args.poolId;
@@ -216,5 +222,28 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
 
     const lnp = await LogNormalParams.findUnique({ id: poolId });
     console.log(lnp);
+  }
+
+  if (name === "GeometricMean") {
+    const gData = decodeAbiParameters(geometricMeanInitParams, data);
+    const wx = gData[3] as bigint;
+    const swapFee = gData[4] as bigint;
+    const controller = gData[5] as any;
+
+    await GeometricMeanParams.create({
+      id: poolId,
+      data: {
+        poolId: poolId,
+        swapFee: swapFee,
+        controller: controller,
+        lastComputedWeightX: wx,
+        weightXUpdatePerSecond: 0n,
+        weightXUpdateEnd: 0,
+        lastWeightXUpdate: 0,
+      },
+    });
+
+    const gp = await GeometricMeanParams.findUnique({ id: poolId });
+    console.log(gp);
   }
 });

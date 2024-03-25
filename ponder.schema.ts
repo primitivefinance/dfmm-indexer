@@ -61,6 +61,17 @@ export default createSchema((p) => ({
     priceUpdateEnd: p.int(),
     lastPriceUpdate: p.int(),
   }),
+  GeometricMeanParams: p.createTable({
+    id: p.bigint(),
+    poolId: p.bigint().references("Pool.id"),
+    pool: p.one("poolId"),
+    swapFee: p.bigint(),
+    controller: p.hex(),
+    lastComputedWeightX: p.bigint(),
+    weightXUpdatePerSecond: p.bigint(),
+    weightXUpdateEnd: p.int(),
+    lastWeightXUpdate: p.int(),
+  }),
   NTokenGeometricMeanParams: p.createTable({
     id: p.bigint(),
     poolId: p.bigint().references("Pool.id"),
