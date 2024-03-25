@@ -11,7 +11,7 @@ import { ethWeiToPoints } from "./utils";
 import { G3MNAbi } from "../abis/G3MN";
 import { ERC20Abi } from "../abis/ERC20Abi";
 import { DFMMAbi } from "../abis/DFMMAbi";
-import { csInitParams, nTokenG3mInitParams } from "./types";
+import { csInitParams, lnInitParams, nTokenG3mInitParams } from "./types";
 
 ponder.on("DFMM:Swap", async ({ event, context }) => {
   const { Account } = context.db;
@@ -69,10 +69,11 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     Strategy,
     ConstantSumParams,
     NTokenGeometricMeanParams,
+    LogNormalParams,
   } = context.db;
 
   const poolId = event.args.poolId;
-  console.log("poolId", poolId)
+  console.log("poolId", poolId);
   const name = await context.client.readContract({
     abi: G3MNAbi,
     address: event.args.strategy,
@@ -186,5 +187,34 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
 
     const ntp = await NTokenGeometricMeanParams.findUnique({ id: poolId });
     console.log(ntp);
+  }
+
+  if (name === "LogNormal") {
+    const lnData = decodeAbiParameters(lnInitParams, data);
+    const params = lnData[2] as any;
+    const mean = params.mean;
+    const width = params.width;
+    const swapFee = params.swapFee;
+    const controller = params.controller;
+
+    await LogNormalParams.create({
+      id: poolId,
+      data: {
+        poolId: poolId,
+        swapFee: swapFee,
+        controller: controller,
+        lastComputedMean: mean,
+        lastComputedWidth: width,
+        meanUpdatePerSecond: 0n,
+        widthUpdatePerSecond: 0n,
+        meanUpdateEnd: 0,
+        widthUpdateEnd: 0,
+        lastMeanUpdate: 0,
+        lastWidthUpdate: 0,
+      },
+    });
+
+    const lnp = await LogNormalParams.findUnique({ id: poolId });
+    console.log(lnp);
   }
 });
