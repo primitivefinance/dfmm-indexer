@@ -10,10 +10,12 @@ export default createConfig({
     optimismSepolia: {
       chainId: 11155420,
       transport: http(process.env.PONDER_RPC_URL_11155420),
+      maxRequestsPerSecond: 1
     },
   },
   contracts: {
     DFMM: {
+      maxBlockRange: 1000,
       abi: DFMMAbi,
       network: {
         optimismSepolia: {
@@ -23,6 +25,7 @@ export default createConfig({
       },
     },
     G3MN: {
+      maxBlockRange: 1000,
       abi: G3MNAbi,
       network: {
         optimismSepolia: {
