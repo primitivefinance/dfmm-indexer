@@ -4,10 +4,9 @@ import {
   decodeAbiParameters,
   parseEther,
   decodeFunctionData,
-  parseAbiParameters,
 } from "viem";
 import { SL_token_address, SL_pool_id, WR_pool_id } from "./constants";
-import { ethWeiToPoints } from "./utils";
+import { computePositionId, ethWeiToPoints } from "./utils";
 import { G3MNAbi } from "../abis/G3MN";
 import { ERC20Abi } from "../abis/ERC20Abi";
 import { DFMMAbi } from "../abis/DFMMAbi";
@@ -44,33 +43,67 @@ ponder.on("DFMM:Swap", async ({ event, context }) => {
     });
   }
 });
-/*
-ponder.on("DFMM:Allocate", async ({ event, context }) => {
-  const { Position, Pool, Account, Period } = context.db;
-  const chainId = context.network.chainId as number;
-  const poolId = event.args.poolId as unknown as number;
 
-  if (poolId === WR_pool_id[chainId]) {
-  } else if (poolId === SL_pool_id[chainId]) {
-  }
+ponder.on("DFMM:Allocate", async ({ event, context }) => {
+  const { Position, Pool } = context.db;
+
+  await Pool.update({
+    id: event.args.poolId,
+    data: ({ current }) => ({
+      reserves: current.reserves
+        .concat()
+        .map((r, i) => r + event.args.deltas[i]),
+      liquidityWad: current.liquidity + event.args.deltaL,
+    }),
+  });
+
+  await Position.upsert({
+    id: computePositionId(event.args.poolId, event.args.account),
+    create: {
+      liquidityWad: event.args.deltaL,
+      liquidity: parseFloat(formatEther(event.args.deltaL)),
+      accountId: event.args.account,
+      poolId: event.args.poolId,
+    },
+    update: ({ current }) => ({
+      liquidityWad: current.liquidityWad + event.args.deltaL,
+      liquidity:
+        parseFloat(current.liquidity.toString()) +
+        parseFloat(formatEther(event.args.deltaL)),
+    }),
+  });
 });
 
 ponder.on("DFMM:Deallocate", async ({ event, context }) => {
-  const { Position, Pool, Account, Period } = context.db;
-  const chainId = context.network.chainId as number;
-  const poolId = event.args.poolId as unknown as number;
+  const { Position, Pool } = context.db;
 
-  if (poolId === WR_pool_id[chainId]) {
-  } else if (poolId === SL_pool_id[chainId]) {
-  }
+  await Pool.update({
+    id: event.args.poolId,
+    data: ({ current }) => ({
+      reserves: current.reserves
+        .concat()
+        .map((r, i) => r - event.args.deltas[i]),
+      liquidityWad: current.liquidity - event.args.deltaL,
+    }),
+  });
+
+  await Position.update({
+    id: computePositionId(event.args.poolId, event.args.account),
+    data: ({ current }) => ({
+      liquidityWad: current.liquidityWad + event.args.deltaL,
+      liquidity:
+        parseFloat(current.liquidity.toString()) +
+        parseFloat(formatEther(event.args.deltaL)),
+    }),
+  });
 });
-*/
 
 ponder.on("DFMM:Init", async ({ event, context }) => {
   const {
     Token,
     Pool,
     PoolToken,
+    Position,
     Strategy,
     ConstantSumParams,
     NTokenGeometricMeanParams,
@@ -246,4 +279,14 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     const gp = await GeometricMeanParams.findUnique({ id: poolId });
     console.log(gp);
   }
+
+  await Position.create({
+    id: computePositionId(event.args.poolId, event.args.account),
+    data: {
+      liquidityWad: event.args.totalLiquidity - 1000n,
+      liquidity: parseFloat(formatEther(event.args.totalLiquidity - 1000n)),
+      accountId: event.args.account,
+      poolId: event.args.poolId,
+    },
+  });
 });
