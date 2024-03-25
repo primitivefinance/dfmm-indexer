@@ -11,7 +11,7 @@ import { ethWeiToPoints } from "./utils";
 import { G3MNAbi } from "../abis/G3MN";
 import { ERC20Abi } from "../abis/ERC20Abi";
 import { DFMMAbi } from "../abis/DFMMAbi";
-import { csInitParams } from "./types";
+import { csInitParams, nTokenG3mInitParams } from "./types";
 
 ponder.on("DFMM:Swap", async ({ event, context }) => {
   const { Account } = context.db;
@@ -62,14 +62,24 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
 */
 
 ponder.on("DFMM:Init", async ({ event, context }) => {
-  const { Token, Pool, PoolToken, Strategy, ConstantSumParams } = context.db;
+  const {
+    Token,
+    Pool,
+    PoolToken,
+    Strategy,
+    ConstantSumParams,
+    NTokenGeometricMeanParams,
+  } = context.db;
 
   const poolId = event.args.poolId;
+  console.log("poolId", poolId)
   const name = await context.client.readContract({
     abi: G3MNAbi,
     address: event.args.strategy,
     functionName: "name",
   });
+
+  console.log("NAME:", name);
 
   const strategy = await Strategy.findUnique({ id: event.args.strategy });
 
@@ -129,25 +139,52 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     })
   );
 
-  const pool = await Pool.findUnique({ id: poolId });
-  console.log(pool);
-
   const data = calldata?.data as any;
 
   if (name === "ConstantSum") {
     const csData = decodeAbiParameters(csInitParams, data);
     const params = csData[2] as any;
     const price = params.price as bigint;
+    const swapFee = params.swapFee;
+    const controller = params.controller;
 
     await ConstantSumParams.create({
       id: poolId,
       data: {
         poolId: poolId,
+        swapFee: swapFee,
+        controller: controller,
         lastComputedPrice: price,
         priceUpdatePerSecond: 0n,
         priceUpdateEnd: 0,
         lastPriceUpdate: 0,
       },
     });
+    const csp = await ConstantSumParams.findUnique({ id: poolId });
+    console.log(csp);
+  }
+
+  if (name === "NTokenGeometricMean") {
+    const nTokenData = decodeAbiParameters(nTokenG3mInitParams, data);
+    const weights = nTokenData[2] as any[];
+    const swapFee = nTokenData[3] as any;
+    const controller = nTokenData[4] as any;
+    const weightUpdatesPerSecond = weights.map((_) => 0n);
+
+    await NTokenGeometricMeanParams.create({
+      id: poolId,
+      data: {
+        poolId: poolId,
+        swapFee: swapFee,
+        controller: controller,
+        lastComputedWeights: weights,
+        weightsUpdatePerSecond: weightUpdatesPerSecond,
+        weightsUpdateEnd: 0,
+        lastWeightsUpdate: 0,
+      },
+    });
+
+    const ntp = await NTokenGeometricMeanParams.findUnique({ id: poolId });
+    console.log(ntp);
   }
 });
