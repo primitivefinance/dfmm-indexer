@@ -18,30 +18,28 @@ import {
 } from "./types";
 
 ponder.on("DFMM:Swap", async ({ event, context }) => {
-  const { Account } = context.db;
+  const { Account, Swap } = context.db;
   const chainId = context.network.chainId as number;
   const poolId = event.args.poolId as unknown as number;
 
-  // Waiting Room ETH->Superliquid Swap Points
-  if (
-    poolId === WR_pool_id[chainId] &&
-    event.args.tokenIn === SL_token_address[context.network.chainId]
-  ) {
-    const swapPoints = ethWeiToPoints(event.args.outputAmount, 5); // swap from ETH->SL is 5x the points of holding LP tokens over 1 hour per ETH
-    await Account.upsert({
-      id: event.args.account,
-      create: {
-        swapPoints,
-        wrPoints: BigInt(0),
-        slPoints: BigInt(0),
-        pointsTotal: swapPoints,
-      },
-      update: ({ current }) => ({
-        swapPoints: ethWeiToPoints(event.args.outputAmount, 5),
-        pointsTotal: current.wrPoints + current.slPoints + swapPoints,
-      }),
-    });
-  }
+  await Swap.create({
+    id: event.transaction.hash,
+    data: {
+      poolId: event.args.poolId,
+      sender: event.args.account,
+      amountIn: parseFloat(formatEther(event.args.inputAmount)),
+      amountInWad: event.args.inputAmount,
+      amountOut: parseFloat(formatEther(event.args.outputAmount)),
+      amountOutWad: event.args.outputAmount,
+      tokenIn: event.args.tokenIn,
+      tokenOut: event.args.tokenOut,
+      timestamp: event.block.timestamp,
+      block: event.block.number,
+    },
+  });
+
+  const swap = await Swap.findUnique({ id: event.transaction.hash });
+  console.log(swap);
 });
 
 ponder.on("DFMM:Allocate", async ({ event, context }) => {
@@ -166,7 +164,7 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
   });
 
   await Promise.all(
-    calldata.tokens.map(async (token: string) => {
+    calldata.tokens.map(async (token) => {
       const tk = await Token.findUnique({ id: token });
       if (tk === null) {
         const results = await context.client.multicall({
