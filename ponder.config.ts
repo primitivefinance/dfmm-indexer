@@ -19,18 +19,8 @@ export default createConfig({
       abi: DFMMAbi,
       network: {
         optimismSepolia: {
-          address: "0x46d0266d3Feb0E65b7c7a9F8aE7A6C3E44216205",
-          startBlock: 9802863,
-        },
-      },
-    },
-    G3MN: {
-      maxBlockRange: 1000,
-      abi: G3MNAbi,
-      network: {
-        optimismSepolia: {
-          address: SL_strategy_address[111555420],
-          startBlock: 9665692,
+          address: "0x20876BA9A79fBfD0841BDC71F310f7Ca3C813221",
+          startBlock: 9841600,
         },
       },
     },

@@ -53,7 +53,13 @@ ponder.on("DFMM:Allocate", async ({ event, context }) => {
       reserves: current.reserves
         .concat()
         .map((r, i) => r + event.args.deltas[i]),
-      liquidityWad: current.liquidity + event.args.deltaL,
+      reservesWad: current.reservesWad
+        .concat()
+        .map((r, i) => r + event.args.deltas[i]),
+      liquidityWad: current.liquidityWad + event.args.deltaL,
+      liquidity: parseFloat(
+        formatEther(current.liquidityWad + event.args.deltaL)
+      ),
     }),
   });
 
@@ -83,7 +89,10 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
       reserves: current.reserves
         .concat()
         .map((r, i) => r - event.args.deltas[i]),
-      liquidityWad: current.liquidity - event.args.deltaL,
+      liquidityWad: current.liquidityWad - event.args.deltaL,
+      liquidity: parseFloat(
+        formatEther(current.liquidityWad - event.args.deltaL)
+      ),
     }),
   });
 
@@ -144,9 +153,13 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     data: {
       strategyId: event.args.strategy,
       name: calldata?.name,
-      reserves: event.args.reserves.concat(),
+      reserves: event.args.reserves
+        .concat()
+        .map((r) => parseFloat(formatEther(r))),
+      reservesWad: event.args.reserves.concat(),
       tokens: calldata.tokens,
-      liquidity: event.args.totalLiquidity,
+      liquidity: parseFloat(formatEther(event.args.totalLiquidity)),
+      liquidityWad: event.args.totalLiquidity,
       lpToken: event.args.lpToken,
       initTimestamp: event.block.timestamp,
     },
@@ -194,8 +207,10 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
         poolId: poolId,
         swapFee: swapFee,
         controller: controller,
-        lastComputedPrice: price,
-        priceUpdatePerSecond: 0n,
+        lastComputedPrice: parseFloat(formatEther(price)),
+        lastComputedPriceWad: price,
+        priceUpdatePerSecond: 0,
+        priceUpdatePerSecondWad: 0n,
         priceUpdateEnd: 0,
         lastPriceUpdate: 0,
       },
