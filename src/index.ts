@@ -52,10 +52,10 @@ ponder.on("DFMM:Allocate", async ({ event, context }) => {
     data: ({ current }) => ({
       reserves: current.reserves
         .concat()
-        .map((r, i) => r + event.args.deltas[i]),
+        .map((r, i) => r + parseInt(formatEther(event.args.deltas[i] ?? 0n))),
       reservesWad: current.reservesWad
         .concat()
-        .map((r, i) => r + event.args.deltas[i]),
+        .map((r, i) => r + (event.args.deltas[i] ?? 0n)),
       liquidityWad: current.liquidityWad + event.args.deltaL,
       liquidity: parseFloat(
         formatEther(current.liquidityWad + event.args.deltaL)
@@ -88,7 +88,7 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
     data: ({ current }) => ({
       reserves: current.reserves
         .concat()
-        .map((r, i) => r - event.args.deltas[i]),
+        .map((r, i) => r - parseInt(formatEther(event.args.deltas[i] ?? 0n))),
       liquidityWad: current.liquidityWad - event.args.deltaL,
       liquidity: parseFloat(
         formatEther(current.liquidityWad - event.args.deltaL)
@@ -166,7 +166,7 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
   });
 
   await Promise.all(
-    calldata.tokens.map(async (token) => {
+    calldata.tokens.map(async (token: string) => {
       const tk = await Token.findUnique({ id: token });
       if (tk === null) {
         const results = await context.client.multicall({
