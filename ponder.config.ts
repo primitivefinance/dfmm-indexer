@@ -15,7 +15,7 @@ export default createConfig({
   },
   contracts: {
     DFMM: {
-      maxBlockRange: 1000,
+      maxBlockRange: 500,
       abi: DFMMAbi,
       network: {
         optimismSepolia: {
