@@ -9,7 +9,7 @@ export default createConfig({
   networks: {
     optimismSepolia: {
       chainId: 11155420,
-      transport: http(process.env.PONDER_RPC_URL_11155420),
+      transport: webSocket(process.env.PONDER_RPC_URL_11155420),
       maxRequestsPerSecond: 1,
     },
   },
