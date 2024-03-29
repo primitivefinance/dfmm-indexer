@@ -1,5 +1,5 @@
 import { createConfig } from "@ponder/core";
-import { http } from "viem";
+import { webSocket } from "viem";
 
 import { DFMMAbi } from "./abis/DFMMAbi";
 import { G3MNAbi } from "./abis/G3MN";
