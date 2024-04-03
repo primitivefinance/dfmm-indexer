@@ -3,19 +3,19 @@ export type contractAddress = {
 }
 
 export const WR_token_address: contractAddress = {
-  11155420: "0xbe4949892A8431B37B4AEb124FED01dc74D20A3c"
+  11155420: "0xB91578Ff19d4ec6754a1103fEBfE095bF668191b"
 }
 
 export const SL_token_address: contractAddress = {
-  11155420: "0x71BE642dd61674CE20EC17de35Bd6d76AcfAAFAD"
+  11155420: "0xd26CC5E66b5BaE0412D89Eb8ddDF54b9A7afe600"
 }
 
 export const WR_strategy_address: contractAddress = {
-  11155420: "0x693E7F3974bB32Cf662E2C5662F9D8025aF23c5a"
+  11155420: "0x1623841962bCB856C44Ac55Ef1D1C3c3354F56Ac"
 }
 
 export const SL_strategy_address: contractAddress = {
-  11155420: "0xCdBb08b8f991d84FA74594318C13FaF1dC9fD55D"
+  11155420: "0x8Cc5377b8384F210170901c5EAb6C8a257f02316"
 }
 
 export const WR_pool_id: { [key: number]: number } = {

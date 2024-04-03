@@ -17,8 +17,8 @@ export default createConfig({
       abi: DFMMAbi,
       network: {
         optimismSepolia: {
-          address: "0x20876BA9A79fBfD0841BDC71F310f7Ca3C813221",
-          startBlock: 9841600,
+          address: "0x2aD77BEb56d7b1875B7bbB4cC29A7061afeF613b",
+          startBlock: 10182090,
         },
       },
     },
