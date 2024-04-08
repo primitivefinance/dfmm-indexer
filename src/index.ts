@@ -43,7 +43,19 @@ ponder.on("DFMM:Swap", async ({ event, context }) => {
 });
 
 ponder.on("DFMM:Allocate", async ({ event, context }) => {
-  const { Position, Pool } = context.db;
+  const { Allocate, Position, Pool } = context.db;
+
+  await Allocate.create({
+    id: event.transaction.hash,
+    data: {
+      sender: event.args.sender,
+      poolId: event.args.poolId,
+      deltas: event.args.deltas,
+      deltaLiquidity: event.args.deltaLiquidity,
+      timestamp: event.block.timestamp,
+      block: event.block.number
+    }
+  })
 
   await Pool.update({
     id: event.args.poolId,
@@ -79,7 +91,19 @@ ponder.on("DFMM:Allocate", async ({ event, context }) => {
 });
 
 ponder.on("DFMM:Deallocate", async ({ event, context }) => {
-  const { Position, Pool } = context.db;
+  const { Deallocate, Position, Pool } = context.db;
+
+  await Deallocate.create({
+    id: event.transaction.hash,
+    data: {
+      sender: event.args.sender,
+      poolId: event.args.poolId,
+      deltas: event.args.deltas,
+      deltaLiquidity: event.args.deltaLiquidity,
+      timestamp: event.block.timestamp,
+      block: event.block.number
+    }
+  })
 
   await Pool.update({
     id: event.args.poolId,
