@@ -37,6 +37,30 @@ export default createSchema((p) => ({
     timestamp: p.bigint(),
     block: p.bigint(),
   }),
+  Allocate: p.createTable({
+    id: p.hex(),
+    poolId: p.bigint().references("Pool.id"),
+    pool: p.one("poolId"),
+    sender: p.hex(),
+    deltas: p.float().list(),
+    deltasWad: p.bigint().list(),
+    deltaLiquidity: p.float(),
+    deltaLiquidityWad: p.bigint(),
+    timestamp: p.bigint(),
+    block: p.bigint()
+  }),
+  Deallocate: p.createTable({
+    id: p.hex(),
+    poolId: p.bigint().references("Pool.id"),
+    pool: p.one("poolId"),
+    sender: p.hex(),
+    deltas: p.float().list().optional(),
+    deltasWad: p.bigint().list().optional(),
+    deltaLiquidity: p.float(),
+    deltaLiquidityWad: p.bigint(),
+    timestamp: p.bigint(),
+    block: p.bigint()
+  }),
   PoolToken: p.createTable({
     id: p.string(),
     tokenId: p.hex().references("Token.id"),
