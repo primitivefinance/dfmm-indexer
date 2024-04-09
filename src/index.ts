@@ -4,12 +4,13 @@ import {
   decodeAbiParameters,
   parseEther,
   decodeFunctionData,
+  decodeEventLog,
 } from "viem";
 import { SL_token_address, SL_pool_id, WR_pool_id } from "./constants";
 import { computePositionId, ethWeiToPoints } from "./utils";
 import { G3MNAbi } from "../abis/G3MN";
 import { ERC20Abi } from "../abis/ERC20Abi";
-import { DFMMAbi } from "../abis/DFMMAbi";
+import { DFMMAbi } from '../abis/DFMMAbi';
 import {
   csInitParams,
   geometricMeanInitParams,
@@ -44,14 +45,15 @@ ponder.on("DFMM:Swap", async ({ event, context }) => {
 
 ponder.on("DFMM:Allocate", async ({ event, context }) => {
   const { Allocate, Position, Pool } = context.db;
-
   await Allocate.create({
     id: event.transaction.hash,
     data: {
-      sender: event.args.sender,
       poolId: event.args.poolId,
-      deltas: event.args.deltas,
-      deltaLiquidity: event.args.deltaLiquidity,
+      sender: event.args.account,
+      deltas: event.args.deltas.concat().map((d) => parseFloat(formatEther(d))),
+      deltasWad: event.args.deltas,
+      deltaLiquidity: parseFloat(formatEther(event.args.deltaL)),
+      deltaLiquidityWad: event.args.deltaL,
       timestamp: event.block.timestamp,
       block: event.block.number
     }
@@ -92,14 +94,17 @@ ponder.on("DFMM:Allocate", async ({ event, context }) => {
 
 ponder.on("DFMM:Deallocate", async ({ event, context }) => {
   const { Deallocate, Position, Pool } = context.db;
-
+  const finalDealloc = event.args.deltas.toString().substr(0,2) === '0x' ? true : false
+  
   await Deallocate.create({
     id: event.transaction.hash,
     data: {
-      sender: event.args.sender,
       poolId: event.args.poolId,
-      deltas: event.args.deltas,
-      deltaLiquidity: event.args.deltaLiquidity,
+      sender: event.args.account,
+      deltas: finalDealloc ? null : event.args.deltas.concat().map((d) => parseFloat(formatEther(d))),
+      deltasWad: finalDealloc ? null : event.args.deltas,
+      deltaLiquidity: parseFloat(formatEther(event.args.deltaL)),
+      deltaLiquidityWad: event.args.deltaL,
       timestamp: event.block.timestamp,
       block: event.block.number
     }
