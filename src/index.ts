@@ -126,9 +126,9 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
   await Position.update({
     id: computePositionId(event.args.poolId, event.args.account),
     data: ({ current }) => ({
-      liquidityWad: current.liquidityWad + event.args.deltaL,
+      liquidityWad: current.liquidityWad - event.args.deltaL,
       liquidity:
-        parseFloat(current.liquidity.toString()) +
+        parseFloat(current.liquidity.toString()) -
         parseFloat(formatEther(event.args.deltaL)),
     }),
   });
