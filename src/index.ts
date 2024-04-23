@@ -45,6 +45,15 @@ ponder.on("DFMM:Swap", async ({ event, context }) => {
 
 ponder.on("DFMM:Allocate", async ({ event, context }) => {
   const { Allocate, Position, Pool } = context.db;
+
+  const _pool = await Pool.findUnique({id: event.args.poolId})
+
+  const lptSupply = await context.client.readContract({
+    abi: ERC20Abi,
+    address: _pool.lpToken,
+    functionName: "totalSupply",
+  })
+
   await Allocate.create({
     id: event.transaction.hash,
     data: {
@@ -72,6 +81,8 @@ ponder.on("DFMM:Allocate", async ({ event, context }) => {
       liquidity: parseFloat(
         formatEther(current.liquidityWad + event.args.deltaL)
       ),
+      liquidityTokenSupply: parseFloat(formatEther(lptSupply)),
+      liquidityTokenSupplyWad: lptSupply,
     }),
   });
 
@@ -96,6 +107,14 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
   const { Deallocate, Position, Pool } = context.db;
   const finalDealloc = event.args.deltas.toString().substr(0,2) === '0x' ? true : false
   
+  const _pool = await Pool.findUnique({id: event.args.poolId})
+
+  const lptSupply = await context.client.readContract({
+    abi: ERC20Abi,
+    address: _pool.lpToken,
+    functionName: "totalSupply",
+  })
+
   await Deallocate.create({
     id: event.transaction.hash,
     data: {
@@ -120,6 +139,8 @@ ponder.on("DFMM:Deallocate", async ({ event, context }) => {
       liquidity: parseFloat(
         formatEther(current.liquidityWad - event.args.deltaL)
       ),
+      liquidityTokenSupply: parseFloat(formatEther(lptSupply)),
+      liquidityTokenSupplyWad: lptSupply,
     }),
   });
 

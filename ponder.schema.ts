@@ -18,6 +18,8 @@ export default createSchema((p) => ({
     reservesWad: p.bigint().list(),
     liquidity: p.float(),
     liquidityWad: p.bigint(),
+    liquidityTokenSupply: p.float(),
+    liquidityTokenSupplyWad: p.bigint(),
     lpToken: p.hex(),
     name: p.string(),
     positions: p.many("Position.poolId"),
