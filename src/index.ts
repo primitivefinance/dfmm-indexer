@@ -176,6 +176,12 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     functionName: "name",
   });
 
+  const lptSupply = await context.client.readContract({
+    abi: ERC20Abi,
+    address: event.args.lpToken,
+    functionName: "totalSupply",
+  })
+
   console.log("NAME:", name);
 
   const strategy = await Strategy.findUnique({ id: event.args.strategy });
@@ -209,6 +215,8 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
       liquidity: parseFloat(formatEther(event.args.totalLiquidity)),
       liquidityWad: event.args.totalLiquidity,
       lpToken: event.args.lpToken,
+      liquidityTokenSupply: parseFloat(formatEther(lptSupply)),
+      liquidityTokenSupplyWad: lptSupply,
       initTimestamp: event.block.timestamp,
     },
   });
