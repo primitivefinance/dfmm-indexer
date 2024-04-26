@@ -16,6 +16,7 @@ import {
   geometricMeanInitParams,
   lnInitParams,
   nTokenG3mInitParams,
+  SYCCInitParams,
 } from "./types";
 
 ponder.on("DFMM:Swap", async ({ event, context }) => {
@@ -166,6 +167,10 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     NTokenGeometricMeanParams,
     LogNormalParams,
     GeometricMeanParams,
+    SYCoveredCallParams,
+    SYToken,
+    PTToken,
+    YTToken,
   } = context.db;
 
   const poolId = event.args.poolId;
@@ -176,13 +181,13 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
     functionName: "name",
   });
 
+
   const lptSupply = await context.client.readContract({
     abi: ERC20Abi,
     address: event.args.lpToken,
     functionName: "totalSupply",
   })
 
-  console.log("NAME:", name);
 
   const strategy = await Strategy.findUnique({ id: event.args.strategy });
 
@@ -297,6 +302,58 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
 
     const ntp = await NTokenGeometricMeanParams.findUnique({ id: poolId });
     console.log(ntp);
+  }
+
+  if (name === 'SYCoveredCall') {
+    const syccData = decodeAbiParameters(SYCCInitParams, data)
+    const params = syccData[2] as any;
+    const reserves = syccData[0]
+    const totalLiquidty = syccData[1]
+    
+    const sy = params.SY.address
+    const pt = params.PT.address
+    const yt = params.YT.address
+  
+    await SYToken.create({
+      id: sy,
+      data: {
+        tokenId: sy,
+        initialExchangeRate: 1n,
+        exchangeRate: 1n, // TODO: insert pricing method for exchange rate or infer from abi params
+      } 
+    })
+
+    await PTToken.create({
+      id: pt,
+      data: {
+        tokenId: pt
+      }
+    })
+
+    await YTToken.create({
+      id: yt,
+      data: {
+        tokenId: yt,
+        redeemableInterest: 0n,
+      }
+    })
+
+    await SYCoveredCallParams.create({
+      id: poolId,
+      data: {
+        poolId: poolId,
+        swapFee: params.swapFee,
+        controller: params.controller,
+        lastTimestamp: event.block.timestamp,
+        mean: params.mean,
+        width: params.width,
+        expiry: params.expiry,
+        syTokenId: sy,
+        ptTokenId: pt,
+        ytTokenId: yt,
+      }
+    })
+
   }
 
   if (name === "LogNormal") {
