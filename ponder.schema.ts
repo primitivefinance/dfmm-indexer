@@ -142,4 +142,39 @@ export default createSchema((p) => ({
     lastMeanUpdate: p.int(),
     lastWidthUpdate: p.int(),
   }),
+  SYCoveredCallParams: p.createTable({
+    id: p.bigint(),
+    poolId: p.bigint().references("Pool.id"),
+    pool: p.one("poolId"),
+    swapFee: p.bigint(),
+    controller: p.hex(),
+    lastTimestamp: p.bigint(),
+    mean: p.bigint(),
+    width: p.bigint(),
+    expiry: p.bigint(),
+    syTokenId: p.hex().references("SYToken.id"),
+    syToken: p.one("syTokenId"),
+    ptTokenId: p.hex().references("PTToken.id"),
+    ptToken: p.one("ptTokenId"),
+    ytTokenId: p.hex().references("YTToken.id"),
+    ytToken: p.one("ytTokenId")
+  }),
+  SYToken: p.createTable({
+    id: p.hex(),
+    tokenId: p.hex().references("Token.id"),
+    token: p.one("tokenId"),
+    initialExchangeRate: p.bigint(),
+    exchangeRate: p.bigint(),
+  }),
+  PTToken: p.createTable({
+    id: p.hex(),
+    tokenId: p.hex().references("Token.id"),
+    token: p.one("tokenId"),
+  }),
+  YTToken: p.createTable({
+    id: p.hex(),
+    tokenId: p.hex().references("Token.id"), 
+    token: p.one("tokenId"),
+    redeemableInterest: p.bigint(),
+  })
 }));
