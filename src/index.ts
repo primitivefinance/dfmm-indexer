@@ -307,8 +307,6 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
   if (name === 'SYCoveredCall') {
     const syccData = decodeAbiParameters(SYCCInitParams, data)
     const params = syccData[2] as any;
-    const reserves = syccData[0]
-    const totalLiquidty = syccData[1]
     
     const sy = params.SY.address
     const pt = params.PT.address
@@ -354,6 +352,8 @@ ponder.on("DFMM:Init", async ({ event, context }) => {
       }
     })
 
+    const sycc = SYCoveredCallParams.findUnique({id: poolId})
+    console.log(sycc)
   }
 
   if (name === "LogNormal") {
